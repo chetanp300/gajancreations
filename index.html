@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gajan Creation Pro Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
+  body{display:flex;min-height:100vh;color:#333;background:linear-gradient(135deg,#4b79a1,#283e51);}
+  .sidebar{width:250px;background:#1f3c88;padding:20px;display:flex;flex-direction:column;align-items:center;box-shadow:2px 0 10px rgba(0,0,0,0.2);}
+  .sidebar h2{color:white;font-size:1.8rem;margin-bottom:30px;text-align:center;text-shadow:1px 1px 3px rgba(0,0,0,0.5);}
+  .sidebar a{text-decoration:none;color:white;font-weight:600;margin:10px 0;padding:10px 20px;width:100%;text-align:center;border-radius:8px;transition:0.3s;cursor:pointer;}
+  .sidebar a:hover{background:#3a5fa0;}
+  .main{flex:1;padding:20px;overflow-y:auto;}
+  header{background:linear-gradient(90deg,#3a5fa0,#4b79a1);color:white;padding:15px 25px;border-radius:12px;font-size:1.8rem;font-weight:700;text-shadow:2px 2px 5px rgba(0,0,0,0.3);margin-bottom:20px;text-align:center;}
+  h2{text-align:center;color:#f0f0f0;margin-bottom:20px;}
+  .product-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;}
+  .card{background:white;border-radius:12px;padding:10px;box-shadow:0 3px 8px rgba(0,0,0,0.2);text-align:center;transition:0.3s;}
+  .card:hover{transform:translateY(-3px);}
+  .card img{width:100%;height:300px;object-fit:cover;border-radius:10px;}
+  .card h3{margin:10px 0;font-size:1.2rem;}
+  .card p{font-weight:600;color:#3a5fa0;}
+  .card button{margin:5px;background:#3a5fa0;color:white;border:none;padding:8px 15px;border-radius:6px;cursor:pointer;font-weight:600;transition:0.3s;}
+  .card button:hover{background:#2a4b7c;}
+  .add-form{background:white;padding:20px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.2);margin-bottom:20px;}
+  .add-form input,.add-form select{margin:10px 0;padding:10px;width:100%;border:1px solid #ccc;border-radius:6px;}
+  .add-form button{background:#3a5fa0;color:white;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-weight:600;}
+  .add-form button:hover{background:#2a4b7c;}
+  table{width:100%;border-collapse:collapse;margin-top:10px;}
+  table, th, td{border:1px solid #ccc;}
+  th,td{padding:8px;text-align:center;}
+  #searchBar{margin-bottom:15px;padding:8px;width:100%;border-radius:6px;border:1px solid #ccc;}
+  .filter-btns button{margin:0 5px;padding:5px 10px;border:none;border-radius:5px;cursor:pointer;background:#3a5fa0;color:white;transition:0.3s;}
+  .filter-btns button:hover{background:#2a4b7c;}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <h2>🌟 Gajan Creation</h2>
+  <a onclick="showSection('home')">Home</a>
+  <a onclick="showSection('inventory')">Inventory</a>
+  <a onclick="showSection('orders')">Orders</a>
+  <a onclick="showSection('profile')">Profile</a>
+  <a onclick="showSection('contact')">Contact</a>
+</div>
+
+<div class="main">
+  <header>Seller Dashboard</header>
+
+  <!-- HOME -->
+  <section id="homeSection">
+    <h2>Dashboard Statistics</h2>
+    <canvas id="dashboardChart" width="400" height="200"></canvas>
+    <canvas id="orderPieChart" width="400" height="200" style="margin-top:20px;"></canvas>
+  </section>
+
+  <!-- Inventory -->
+  <section id="inventorySection" style="display:none;">
+    <h2>Inventory</h2>
+    <button onclick="toggleAddForm()">➕ Add Product</button>
+    <div class="add-form" id="addForm" style="display:none;">
+      <input type="text" id="pName" placeholder="Product Name">
+      <input type="text" id="pPrice" placeholder="Price (₹)">
+      <input type="text" id="pImage" placeholder="Image URL">
+      <button onclick="addProduct()">Add Product</button>
+    </div>
+    <input type="text" id="searchBar" placeholder="Search Product..." onkeyup="searchProducts()">
+    <div class="filter-btns">
+      <button onclick="filterProducts('all')">All</button>
+      <button onclick="filterProducts('under500')">Under ₹500</button>
+      <button onclick="filterProducts('above500')">Above ₹500</button>
+    </div>
+    <div class="product-grid" id="productGrid"></div>
+  </section>
+
+  <!-- Orders -->
+  <section id="ordersSection" style="display:none;">
+    <h2>Orders</h2>
+    <table id="ordersTable">
+      <tr><th>#</th><th>Product</th><th>Customer</th><th>Status</th><th>Update</th></tr>
+    </table>
+    <div class="add-form">
+      <input type="text" id="orderProduct" placeholder="Product Name">
+      <input type="text" id="orderCustomer" placeholder="Customer Name">
+      <select id="orderStatus">
+        <option value="Pending">Pending</option>
+        <option value="Shipped">Shipped</option>
+        <option value="Delivered">Delivered</option>
+      </select>
+      <button onclick="addOrder()">Add Order</button>
+    </div>
+  </section>
+
+  <!-- Profile -->
+  <section id="profileSection" style="display:none;">
+    <h2>Profile</h2>
+    <p><b>Seller Name:</b> Chetan (Gajan Creation)</p>
+    <p><b>Email:</b> chetanp224p@gmail.com</p>
+    <p><b>Total Products:</b> <span id="totalProducts">0</span></p>
+  </section>
+
+  <!-- Contact -->
+  <section id="contactSection" style="display:none;">
+    <h2>Contact Support</h2>
+    <p>Email us at: <b>chetanp224p@gmail.com</b></p>
+  </section>
+</div>
+
+<script>
+let products = [
+  {name:"Pink Floral Gown",price:1299,image:"https://images.unsplash.com/photo-1520975922131-dc4e29b6ef59?auto=format&fit=crop&w=800&q=60"},
+  {name:"Royal Blue Gown",price:1499,image:"https://images.unsplash.com/photo-1602810318383-e386cc2a3b5a?auto=format&fit=crop&w=800&q=60"},
+  {name:"Elegant Red Gown",price:1399,image:"https://images.unsplash.com/photo-1521334884684-d80222895322?auto=format&w=800&q=60"},
+];
+
+let orders = [
+  {product:"Pink Floral Gown",customer:"Rahul",status:"Pending"},
+  {product:"Royal Blue Gown",customer:"Amit",status:"Shipped"}
+];
+
+let filteredProducts = [...products];
+
+function renderProducts(){
+  const grid = document.getElementById('productGrid');
+  grid.innerHTML = "";
+  filteredProducts.forEach((p,i)=>{
+    grid.innerHTML += `
+      <div class="card">
+        <img src="${p.image}" alt="${p.name}">
+        <h3>${p.name}</h3>
+        <p>₹${p.price}</p>
+        <button onclick="editProduct(${i})">Edit</button>
+        <button onclick="deleteProduct(${i})">Delete</button>
+      </div>`;
+  });
+  document.getElementById("totalProducts").innerText = products.length;
+  renderCharts();
+}
+
+function addProduct(){
+  let name=document.getElementById("pName").value;
+  let price=parseInt(document.getElementById("pPrice").value);
+  let image=document.getElementById("pImage").value;
+  if(!name||!price||!image){alert("Fill all fields");return;}
+  products.push({name,price,image});
+  filteredProducts=[...products];
+  document.getElementById("pName").value="";
+  document.getElementById("pPrice").value="";
+  document.getElementById("pImage").value="";
+  renderProducts();
+  alert("✅ Product added!");
+}
+
+function editProduct(i){
+  let newName=prompt("New Name:",filteredProducts[i].name);
+  let newPrice=parseInt(prompt("New Price:",filteredProducts[i].price));
+  let newImage=prompt("New Image URL:",filteredProducts[i].image);
+  if(newName && newPrice && newImage){
+    let index = products.findIndex(p=>p===filteredProducts[i]);
+    products[index]={name:newName,price:newPrice,image:newImage};
+    filteredProducts=[...products];
+    renderProducts();
+  }
+}
+
+function deleteProduct(i){
+  if(confirm("Delete this product?")){
+    let index = products.findIndex(p=>p===filteredProducts[i]);
+    products.splice(index,1);
+    filteredProducts=[...products];
+    renderProducts();
+  }
+}
+
+function toggleAddForm(){
+  const f=document.getElementById("addForm");
+  f.style.display=f.style.display==="none"?"block":"none";
+}
+
+function searchProducts(){
+  const query=document.getElementById("searchBar").value.toLowerCase();
+  filteredProducts=products.filter(p=>p.name.toLowerCase().includes(query));
+  renderProducts();
+}
+
+function filterProducts(type){
+  if(type==='all') filteredProducts=[...products];
+  if(type==='under500') filteredProducts=products.filter(p=>p.price<500);
+  if(type==='above500') filteredProducts=products.filter(p=>p.price>=500);
+  renderProducts();
+}
+
+// Orders
+function renderOrders(){
+  const table=document.getElementById("ordersTable");
+  table.innerHTML="<tr><th>#</th><th>Product</th><th>Customer</th><th>Status</th><th>Update</th></tr>";
+  orders.forEach((o,i)=>{
+    table.innerHTML+=`<tr>
+      <td>${i+1}</td>
+      <td>${o.product}</td>
+      <td>${o.customer}</td>
+      <td>${o.status}</td>
+      <td>
+        <select onchange="updateStatus(${i},this.value)">
+          <option ${o.status==="Pending"?"selected":""}>Pending</option>
+          <option ${o.status==="Shipped"?"selected":""}>Shipped</option>
+          <option ${o.status==="Delivered"?"selected":""}>Delivered</option>
+        </select>
+      </td>
+    </tr>`;
+  });
+}
+
+function addOrder(){
+  let product=document.getElementById("orderProduct").value;
+  let customer=document.getElementById("orderCustomer").value;
+  let status=document.getElementById("orderStatus").value;
+  if(!product||!customer){alert("Fill all fields");return;}
+  orders.push({product,customer,status});
+  document.getElementById("orderProduct").value="";
+  document.getElementById("orderCustomer").value="";
+  renderOrders();
+}
+
+function updateStatus(i,value){
+  orders[i].status=value;
+  renderOrders();
+}
+
+function showSection(sec){
+  document.querySelectorAll('section').forEach(s=>s.style.display="none");
+  document.getElementById(sec+"Section").style.display="block";
+  if(sec==="inventory") renderProducts();
+  if(sec==="orders") renderOrders();
+  if(sec==="home") renderCharts();
+}
+
+// Charts
+let chartBar, chartPie;
+function renderCharts(){
+  const ctxBar=document.getElementById('dashboardChart').getContext('2d');
+  const ctxPie=document.getElementById('orderPieChart').getContext('2d');
+  const totalOrders=orders.length;
+  const pending=orders.filter(o=>o.status==="Pending").length;
+  const shipped=orders.filter(o=>o.status==="Shipped").length;
+  const delivered=orders.filter(o=>o.status==="Delivered").length;
+  const totalProducts=products.length;
+
+  if(chartBar) chartBar.destroy();
+  chartBar=new Chart(ctxBar,{
+    type:'bar',
+    data:{
+      labels:['Total Products','Total Orders','Pending Orders','Shipped Orders','Delivered Orders'],
+      datasets:[{label:'Statistics',data:[totalProducts,totalOrders,pending,shipped,delivered],backgroundColor:['#3a5fa0','#2a4b7c','#f0ad4e','#5bc0de','#5cb85c']}]
+    },
+    options:{responsive:true,plugins:{legend:{display:false}}}
+  });
+
+  if(chartPie) chartPie.destroy();
+  chartPie=new Chart(ctxPie,{
+    type:'pie',
+    data:{
+      labels:['Pending','Shipped','Delivered'],
+      datasets:[{data:[pending,shipped,delivered],backgroundColor:['#f0ad4e','#5bc0de','#5cb85c']}]
+    },
+    options:{responsive:true}
+  });
+}
+
+// Initialize
+showSection('home');
+renderProducts();
+renderOrders();
+</script>
+</body>
+</html>
